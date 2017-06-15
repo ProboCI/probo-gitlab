@@ -1,0 +1,15 @@
+# Port for the server to listen on
+port: 3013
+hostname: localhost
+
+webhookUrl: '/gitlab-webhook'
+# Bitbucket client key and client secret. These are generated for you
+# when you create a new OAuth client in Bitbucket
+# clientKey: null
+# clientSecret: null
+
+# Settings for the API or Container Manager server
+# port
+api:
+  url: "http://localhost:3000"
+  token: "token2"

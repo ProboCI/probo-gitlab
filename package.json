@@ -1,0 +1,35 @@
+{
+  "name": "probo-gitlab-handler",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "./bin/probo-gtilab-handler -c dev.yaml | bunyan",
+    "startdev": "nodemon ./bin/probo-gtilab-handler -c dev.yaml | bunyan",
+    "test": "mocha --require should",
+    "watch": "mocha -w --require should | bunyan"
+  },
+  "author": "",
+  "license": "Proprietary",
+  "dependencies": {
+    "async": "^1.5.0",
+    "bluebird": "^2.10.0",
+    "bunyan": "^1.4.0",
+    "gitlab": "^1.7.1",
+    "js-yaml": "^3.3.1",
+    "oauth": "^0.9.14",
+    "querystring": "^0.2.0",
+    "request": "^2.57.0",
+    "restify": "^3.0.3",
+    "superagent": "^1.2.0",
+    "yaml-config-loader": "1.1.1",
+    "yargs": "^3.4.5"
+  },
+  "devDependencies": {
+    "eslint": "^1.10.3",
+    "eslint-config-probo": "^1.0.2",
+    "mocha": "^2.2.4",
+    "nock": "^1.6.0",
+    "should": "^5.2.0"
+  }
+}
