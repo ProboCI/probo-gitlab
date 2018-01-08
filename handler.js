@@ -1,6 +1,6 @@
 'use strict';
 
-var GitlabHandler = require('./lib/GitlabHandler');
+var GitLabHandler = require('./lib/GitLabHandler');
 
 var exports = function() {
   this.configure = this.configure.bind(this);
@@ -34,7 +34,7 @@ exports.options = function(yargs) {
 };
 
 exports.configure = function(config) {
-  server = new GitlabHandler(config);
+  server = new GitLabHandler(config);
 };
 
 exports.run = function(cb) {
