@@ -1,0 +1,122 @@
+{
+  "object_kind": "merge_request",
+  "event_type": "merge_request",
+  "user": {
+    "name": "proboci",
+    "username": "proboci",
+    "avatar_url": "https://secure.gravatar.com/avatar/1234?s=80&d=identicon"
+  },
+  "project": {
+    "id": 1234,
+    "name": "testrepo",
+    "description": "",
+    "web_url": "https://gitlab.com/proboci/testrepo",
+    "avatar_url": null,
+    "git_ssh_url": "git@gitlab.com:proboci/testrepo.git",
+    "git_http_url": "https://gitlab.com/proboci/testrepo.git",
+    "namespace": "proboci",
+    "visibility_level": 20,
+    "path_with_namespace": "proboci/testrepo",
+    "default_branch": "master",
+    "ci_config_path": null,
+    "homepage": "https://gitlab.com/proboci/testrepo",
+    "url": "git@gitlab.com:proboci/testrepo.git",
+    "ssh_url": "git@gitlab.com:proboci/testrepo.git",
+    "http_url": "https://gitlab.com/proboci/testrepo.git"
+  },
+  "object_attributes": {
+    "assignee_id": null,
+    "author_id": 12345,
+    "created_at": "2017-08-23 17:37:40 UTC",
+    "description": "",
+    "head_pipeline_id": 22390264,
+    "id": 123456,
+    "iid": 1,
+    "last_edited_at": null,
+    "last_edited_by_id": null,
+    "merge_commit_sha": null,
+    "merge_error": null,
+    "merge_params": {
+      "force_remove_source_branch": null
+    },
+    "merge_status": "cannot_be_merged",
+    "merge_user_id": null,
+    "merge_when_pipeline_succeeds": false,
+    "milestone_id": null,
+    "source_branch": "master",
+    "source_project_id": 1234,
+    "state": "opened",
+    "target_branch": "feature",
+    "target_project_id": 1234,
+    "time_estimate": 0,
+    "title": "WIP: Master",
+    "updated_at": "2018-05-17 19:30:08 UTC",
+    "updated_by_id": null,
+    "url": "https://gitlab.com/proboci/testrepo/merge_requests/1",
+    "source": {
+      "id": 1234,
+      "name": "testrepo",
+      "description": "",
+      "web_url": "https://gitlab.com/proboci/testrepo",
+      "avatar_url": null,
+      "git_ssh_url": "git@gitlab.com:proboci/testrepo.git",
+      "git_http_url": "https://gitlab.com/proboci/testrepo.git",
+      "namespace": "proboci",
+      "visibility_level": 20,
+      "path_with_namespace": "proboci/testrepo",
+      "default_branch": "master",
+      "ci_config_path": null,
+      "homepage": "https://gitlab.com/proboci/testrepo",
+      "url": "git@gitlab.com:proboci/testrepo.git",
+      "ssh_url": "git@gitlab.com:proboci/testrepo.git",
+      "http_url": "https://gitlab.com/proboci/testrepo.git"
+    },
+    "target": {
+      "id": 1234,
+      "name": "testrepo",
+      "description": "",
+      "web_url": "https://gitlab.com/proboci/testrepo",
+      "avatar_url": null,
+      "git_ssh_url": "git@gitlab.com:proboci/testrepo.git",
+      "git_http_url": "https://gitlab.com/proboci/testrepo.git",
+      "namespace": "proboci",
+      "visibility_level": 20,
+      "path_with_namespace": "proboci/testrepo",
+      "default_branch": "master",
+      "ci_config_path": null,
+      "homepage": "https://gitlab.com/proboci/testrepo",
+      "url": "git@gitlab.com:proboci/testrepo.git",
+      "ssh_url": "git@gitlab.com:proboci/testrepo.git",
+      "http_url": "https://gitlab.com/proboci/testrepo.git"
+    },
+    "last_commit": {
+      "id": "07fca8f08ae1ad8a77c50beab4bf6302c705e21e",
+      "message": "testing\n",
+      "timestamp": "2018-05-09T20:29:21Z",
+      "url": "https://gitlab.com/proboci/testrepo/commit/07fca8f08ae1ad8a77c50beab4bf6302c705e21e",
+      "author": {
+        "name": "ProboCI",
+        "email": "test@example.com"
+      }
+    },
+    "work_in_progress": true,
+    "total_time_spent": 0,
+    "human_total_time_spent": null,
+    "human_time_estimate": null
+  },
+  "labels": [
+
+  ],
+  "changes": {
+    "total_time_spent": {
+      "previous": null,
+      "current": 0
+    }
+  },
+  "repository": {
+    "name": "testrepo",
+    "url": "git@gitlab.com:proboci/testrepo.git",
+    "description": "",
+    "homepage": "https://gitlab.com/proboci/testrepo"
+  }
+}
