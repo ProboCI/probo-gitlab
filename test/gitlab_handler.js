@@ -19,6 +19,7 @@ var config = {
     url: 'http://localhost:3000',
     token: 'token',
   },
+  gitLabToken: '1234'
 };
 var glhServer = new GitLabHandler(config);
 
@@ -88,50 +89,47 @@ describe('GitLabHandler', function() {
           build.id.should.eql('build1');
           build.projectId.should.eql('1234');
           build.commit.should.be.a.object;
-          build.commit.ref.should.eql('9dd7d8b3ccf6cdecc86920535e52c4d50da7bd64');
+          build.commit.ref.should.eql('07fca8f08ae1ad8a77c50beab4bf6302c705e21e');
           build.pullRequest.should.be.a.object;
           build.pullRequest.number.should.eql('1');
           build.branch.should.be.a.object;
-          build.branch.name.should.eql('feature');
+          build.branch.name.should.eql('master');
 
           build.config.should.eql({
-            fetcher_config: {
-              'environment.remote': 'dev',
-              'info_fetcher.class': 'FetcherServices\\InfoFetcher\\FetcherServices',
-              'info_fetcher.config': {
-                host: 'https://extranet.zivtech.com',
-              },
-              'name': 'awesome',
-            },
-            image: 'lepew/ubuntu-14.04-lamp',
-            provisioner: 'fetcher',
+            steps: [{
+              'name': 'Probo site setup',
+              'plugin': 'LAMPApp',
+            }],
           });
 
           build.project.should.eql({
             id: '1234',
-              // provider_id: 33704441,
+            provider_id: 1234,
             owner: 'proboci',
             repo: 'testrepo',
             service: 'gitlab',
+            service_auth: {
+              token: "testing"
+            },
             slug: 'proboci/testrepo',
           });
 
           build.request.should.eql({
-            branch: 'feature',
-            branch_html_url: 'https://gitlab.com/proboci/testrepo/tree/feature',
-            commit_url: 'https://gitlab.com/proboci/proboci/commit/6642b53392e3f2ef452249f4cee903aedabd0369',
-            pull_request_id: 33015959,
+            branch: 'master',
+            branch_html_url: 'https://gitlab.com/proboci/testrepo/tree/master',
+            commit_url: 'https://gitlab.com/proboci/testrepo/commit/07fca8f08ae1ad8a77c50beab4bf6302c705e21e',
+            pull_request_id: 123456,
             pull_request_description: '',
-            pull_request_html_url: 'https://gitlab.com/proboci/testrepo/merge_requests/2',
-            pull_request_name: 'change for feature branch',
+            pull_request_html_url: 'https://gitlab.com/proboci/testrepo/merge_requests/1',
+            pull_request_name: 'WIP: Master',
             owner: 'proboci',
             pull_request: 1,
             repo: 'testrepo',
-            repo_id: 33704441,
+            repo_id: 1234,
             service: 'gitlab',
-            sha: '6642b53392e3f2ef452249f4cee903aedabd0369',
+            sha: '07fca8f08ae1ad8a77c50beab4bf6302c705e21e',
             slug: 'proboci/testrepo',
-            type: 'merge_request',
+            type: 'pull_request',
             payload: payload,
           });
 
@@ -140,11 +138,10 @@ describe('GitLabHandler', function() {
       });
     });
 
-    /*describe('push', function() {
+    describe('push', function() {
       it('is handled', function(done) {
-        let payload = require('./push_payload');
+        let payload = require('./fixtures/push_payload');
 
-        // @todo: update headers
         let headers = {
           'X-GitLab-Event': 'push',
           'X-GitLab-Delivery': '8ec7bd00-df2b-11e4-9807-657b8ba6b6bd',
@@ -156,10 +153,10 @@ describe('GitLabHandler', function() {
           done();
         });
       });
-    });*/
+    });
   });
 
-  /*describe('status update endpoint', function() {
+  describe('status update endpoint', function() {
     let glh;
 
     before('start another glh', function(done) {
@@ -173,7 +170,7 @@ describe('GitLabHandler', function() {
     let mocked;
     before('set up mocks', function() {
       // call the first cb arg w/ no arguments
-      mocked = sinon.stub(glh, 'postStatusToGithlab').yields();
+      mocked = sinon.stub(glh, 'postStatusToGitLab').yields();
     });
 
     after('clear mocks', function() {
@@ -256,40 +253,41 @@ describe('GitLabHandler', function() {
         done(err);
       });
     });
-  });*/
+  });
 
 
-  /*describe('probo.yaml file parsing', function() {
+  describe('probo.yaml file parsing', function() {
     let mocks = [];
     let updateSpy;
     let glh;
 
-    let errorMessage = `Failed to parse .probo.yaml:bad indentation of a mapping entry at line 3, column 3:
+    var errorMessageEmpty = `Failed to parse .probo.yml:must start with number, buffer, array or string`;
+    var errorMessageBad = `Failed to parse .probo.yml:bad indentation of a mapping entry at line 3, column 3:
       command: 'bad command'
       ^`;
 
     before('init mocks', function() {
-      glh = new GithubHandler(config);
+      glh = new GitLabHandler(config);
 
-      // mock out Githlab API calls
-      mocks.push(sinon.stub(glh, 'getGitlabApi').returns({
-        repos: {
-          getContent: function(opts, cb) {
-            if (opts.path === '') {
-              // listing of files
-              cb(null, [{name: '.probo.yaml'}]);
-            }
-            else {
-              // Getting content of a file - return a malformed YAML file.
-              cb(null, {
-                path: '.probo.yaml',
-                content: new Buffer(`steps:
+      // mock out GitLab API calls
+      mocks.push(sinon.stub(glh, 'getGitLabApi').returns({
+        projects: {
+          repository: {
+            showFile: function(projectId, params, fn) {
+              if (params.ref == 'sha1') {
+                fn({
+                  file_path: '.probo.yml',
+                  content: new Buffer(`steps:
   - name: task
-  command: 'bad command'`).toString('base64'),
-              });
+  command: 'bad command'`).toString('base64')
+                });
+              }
+              else {
+                fn({file_path: '.probo.yml'});
+              }
             }
-          },
-        },
+          }
+        }
       }));
 
       // mock out internal API calls
@@ -309,8 +307,8 @@ describe('GitLabHandler', function() {
     });
 
     it('throws an error for a bad yaml', function(done) {
-      glh.fetchProboYamlConfigFromGitlab({}, null, function(err) {
-        err.message.should.eql(errorMessage);
+      glh.fetchProboYamlConfigFromGitLab({service_auth: {token: 'testing'}}, null, function(err) {
+        err.message.should.eql(errorMessageEmpty);
         done();
       });
     });
@@ -318,8 +316,8 @@ describe('GitLabHandler', function() {
     it('sends status update for bad yaml', function(done) {
       glh.processRequest({sha: 'sha1'}, function() {
         let param1 = {
-          state: 'failure',
-          description: errorMessage,
+          state: 'error',
+          description: errorMessageBad,
           context: 'ProboCI/env',
         };
         let param2 = {
@@ -330,7 +328,7 @@ describe('GitLabHandler', function() {
         done();
       });
     });
-  });*/
+  });
 });
 
 function initNock() {

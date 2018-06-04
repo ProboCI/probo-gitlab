@@ -2,21 +2,19 @@
   {"scope": "https://gitlab.com:443",
     "method": "get",
     "path": "/api/v3/projects/1234/repository/files?ref=07fca8f08ae1ad8a77c50beab4bf6302c705e21e&file_path=.probo.yml&projectId=1234",
-    "body": "",
+    "body": {},
     "status": 200,
-    "response": [
-      {
-        "file_name": ".probo.yml",
-        "file_path": ".probo.yml",
-        "size": 498,
-        "encoding": "base64",
-        "content": "c3RlcHM6CiAgLSBuYW1lOiBQcm9ibyBzaXRlIHNldHVwCiAgICBwbHVnaW46IExBTVBBcHA=",
-        "ref": "master",
-        "blob_id": "d385f28ed6991bf6cadaeb96125046716adbf723",
-        "commit_id": "07fca8f08ae1ad8a77c50beab4bf6302c705e21e",
-        "last_commit_id": "6642b53392e3f2ef452249f4cee903aedabd0369"
-      }
-    ],
+    "response": {
+      "file_name": ".probo.yml",
+      "file_path": ".probo.yml",
+      "size": 498,
+      "encoding": "base64",
+      "content": "c3RlcHM6CiAgLSBuYW1lOiBQcm9ibyBzaXRlIHNldHVwCiAgICBwbHVnaW46IExBTVBBcHA=",
+      "ref": "master",
+      "blob_id": "d385f28ed6991bf6cadaeb96125046716adbf723",
+      "commit_id": "07fca8f08ae1ad8a77c50beab4bf6302c705e21e",
+      "last_commit_id": "6642b53392e3f2ef452249f4cee903aedabd0369"
+    },
     "headers": {
       "server": "Gitlab.com",
       "date": "Thu, 30 Apr 2015 23:16:35 GMT",
