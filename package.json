@@ -10,19 +10,20 @@
     "watch": "mocha -w --require should | bunyan"
   },
   "author": "",
-  "license": "Proprietary",
+  "license": "Apache-2.0",
   "dependencies": {
     "async": "^1.5.0",
+    "babel-runtime": "^6.26.0",
     "bluebird": "^2.10.0",
     "bunyan": "^1.4.0",
-    "gitlab": "^1.7.1",
+    "gitlab": "^3.5.1",
     "gitlab-webhook-handler": "^1.0.1",
     "js-yaml": "^3.3.1",
     "oauth": "^0.9.14",
-    "probo-request-logger": "^1.0.1",
+    "probo-request-logger": "^1.1.2",
     "querystring": "^0.2.0",
     "request": "^2.57.0",
-    "restify": "^3.0.3",
+    "restify": "^4.1",
     "superagent": "^1.2.0",
     "yaml-config-loader": "1.1.1",
     "yargs": "^3.4.5"
@@ -32,6 +33,7 @@
     "eslint-config-probo": "^1.0.2",
     "mocha": "^2.2.4",
     "nock": "^1.6.0",
-    "should": "^5.2.0"
+    "should": "^5.2.0",
+    "sinon": "^6.1.4"
   }
 }

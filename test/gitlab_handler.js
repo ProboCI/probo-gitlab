@@ -8,6 +8,7 @@ var should = require('should');
 var sinon = require('sinon');
 var nock = require('nock');
 var nockout = require('./__nockout');
+var Promise = require('bluebird');
 
 var GitLabHandler = require('../lib/GitLabHandler');
 
@@ -261,34 +262,33 @@ describe('GitLabHandler', function() {
     let updateSpy;
     let glh;
 
-    var errorMessageEmpty = `Failed to parse .probo.yml:must start with number, buffer, array or string`;
-    var errorMessageBad = `Failed to parse .probo.yml:bad indentation of a mapping entry at line 3, column 3:
-      command: 'bad command'
-      ^`;
+    var errorMessageEmpty = `Failed to parse .probo.yml:First argument must be a string, Buffer, ArrayBuffer, Array, or array-like object.`;
+    var errorMessageBad = `Failed to parse .probo.yml:bad indentation of a mapping entry at line 3, column 5:
+        command: 'bad command'
+        ^`;
 
     before('init mocks', function() {
       glh = new GitLabHandler(config);
 
-      // mock out GitLab API calls
-      mocks.push(sinon.stub(glh, 'getGitLabApi').returns({
-        projects: {
-          repository: {
-            showFile: function(projectId, params, fn) {
-              if (params.ref == 'sha1') {
-                fn({
-                  file_path: '.probo.yml',
-                  content: new Buffer(`steps:
-  - name: task
-  command: 'bad command'`).toString('base64')
-                });
-              }
-              else {
-                fn({file_path: '.probo.yml'});
-              }
+      let gitLabApi = sinon.stub(glh, 'getGitLabApi');
+      gitLabApi.returns({
+        RepositoryFiles: {
+          show: function(projectId, filePath, ref) {
+            if (ref == 'sha1') {
+              return Promise.resolve({
+                    file_path: '.probo.yml',
+                    content: new Buffer(`steps:
+    - name: task
+    command: 'bad command'`).toString('base64')
+              });
             }
-          }
+            else {
+              return Promise.resolve({file_path: '.probo.yml'});
+            }
+          },
         }
-      }));
+      });
+      mocks.push(gitLabApi);
 
       // mock out internal API calls
       mocks.push(
@@ -307,14 +307,18 @@ describe('GitLabHandler', function() {
     });
 
     it('throws an error for a bad yaml', function(done) {
-      glh.fetchProboYamlConfigFromGitLab({service_auth: {token: 'testing'}}, null, function(err) {
-        err.message.should.eql(errorMessageEmpty);
-        done();
+      glh.fetchProboYamlConfigFromGitLab({service_auth: {token: 'testing'}}, null, function(err, config) {
+        try {
+          err.message.should.eql(errorMessageEmpty);
+          done();
+        } catch (e) {
+          done(e);
+        };
       });
     });
 
     it('sends status update for bad yaml', function(done) {
-      glh.processRequest({sha: 'sha1'}, function() {
+      glh.processRequest({sha: 'sha1', type: 'gitlab', id: 'bad'}, function() {
         let param1 = {
           state: 'error',
           description: errorMessageBad,
@@ -324,8 +328,12 @@ describe('GitLabHandler', function() {
           commit: {ref: 'sha1'},
           project: {},
         };
-        updateSpy.calledWith(param1, param2).should.equal(true);
-        done();
+        try {
+          updateSpy.calledWith(param1, param2).should.equal(true);
+          done();
+        } catch (e) {
+          done(e);
+        }
       });
     });
   });
