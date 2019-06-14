@@ -1,13 +1,14 @@
 #! /usr/bin/env node
 'use strict';
 
-var path = require('path');
-var util = require('util');
+const path = require('path');
+const util = require('util');
+const Loader = require('yaml-config-loader');
+const yargs = require('yargs');
 
-var Loader = require('yaml-config-loader');
-var yargs = require('yargs');
-var loader = new Loader();
-var handler = require('../handler');
+const handler = require('../handler');
+
+const loader = new Loader();
 
 loader.on('error', function(error) {
   if (error.name === 'YAMLException') {
@@ -16,44 +17,44 @@ loader.on('error', function(error) {
   }
 });
 
-
-var argv = yargs
+let argv = yargs
   .describe('config', 'A YAML config file or directory of yaml files to load, can be invoked multiple times and later files will override earlier.')
-  .alias('config', 'c')
-  .argv;
+  .alias('config', 'c');
+
+let executor = handler;
+
+if (executor.options) {
+  argv = executor.options(yargs)
+}
+else {
+  argv = argv.argv;
+}
 
 loader.add(path.resolve(path.join(__dirname, '..', 'defaults.yaml')));
 loader.addAndNormalizeObject(process.env);
 
-if (argv.config) {
-  if (typeof argv.config === 'string') {
-    argv.config = [argv.config];
+if (argv.c) {
+  if (typeof argv.c === 'string') {
+    argv.c = [argv.c];
   }
-  for (var i in argv.config) {
-    loader.add(path.resolve(argv.config[i]));
+  for (let i in argv.c) {
+    loader.add(path.resolve(argv.c[i]));
   }
 }
 
-var executor = handler;
-
 if (executor.options) {
-  yargs = executor.options(yargs);
-  var setOptions = {};
-  var key = null;
-  for (key in yargs.argv) {
-    if (yargs.argv[key] !== undefined) {
-      setOptions[key] = yargs.argv[key];
+  let setOptions = {};
+  let key = null;
+  for (key in argv) {
+    if (argv[key] !== undefined) {
+      setOptions[key] = argv[key];
     }
   }
+
   loader.addAndNormalizeObject(setOptions);
 }
 
-if (argv.help) {
-  yargs.showHelp();
-  process.exit();
-}
-
-loader.load(function(error, config) {
+loader.load((error, config) => {
   if (error) throw error;
   if (executor.configure) {
     executor.configure(config);
