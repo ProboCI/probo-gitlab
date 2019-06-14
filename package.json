@@ -6,8 +6,8 @@
   "scripts": {
     "start": "./bin/probo-gtilab-handler -c dev.yaml | bunyan",
     "startdev": "nodemon ./bin/probo-gtilab-handler -c dev.yaml | bunyan",
-    "test": "mocha --require should",
-    "watch": "mocha -w --require should | bunyan"
+    "test": "mocha",
+    "watch": "mocha -w"
   },
   "author": "",
   "license": "Apache-2.0",
@@ -21,7 +21,7 @@
     "probo-request-logger": "^1.1.2",
     "querystring": "^0.2.0",
     "request": "^2.88.0",
-    "restify": "^4.1",
+    "restify": "^8.3.3",
     "superagent": "^5.0.8",
     "yaml-config-loader": "2.1.0",
     "yargs": "^3.4.5"
