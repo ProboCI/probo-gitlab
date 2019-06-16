@@ -1,6 +1,6 @@
 'use strict';
 
-var GitlabHandler = require('./lib/GitlabHandler');
+var GitLabHandler = require('./lib/GitLabHandler');
 
 var exports = function() {
   this.configure = this.configure.bind(this);
@@ -26,7 +26,7 @@ exports.options = function(yargs) {
     .alias('port', 'p')
     .describe('gitlab-webhook-path', 'The path at which to listen for webhooks.')
     .alias('gitlab-webhook-path', 'P')
-    .describe('gitlab-webhook-secret', 'The webhook secret provided to Gtilab.')
+    .describe('gitlab-webhook-secret', 'The webhook secret provided to Gitlab.')
     .alias('gitlab-webhook-secret', 's')
     .describe('gitlab-api-token', 'The API token to use to write to Gitlab.')
     .alias('gitlab-api-token', 'a')
@@ -34,7 +34,7 @@ exports.options = function(yargs) {
 };
 
 exports.configure = function(config) {
-  server = new GitlabHandler(config);
+  server = new GitLabHandler(config);
 };
 
 exports.run = function(cb) {
