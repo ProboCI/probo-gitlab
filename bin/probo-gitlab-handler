@@ -24,7 +24,7 @@ let argv = yargs
 let executor = handler;
 
 if (executor.options) {
-  argv = executor.options(yargs)
+  argv = executor.options(yargs);
 }
 else {
   argv = argv.argv;

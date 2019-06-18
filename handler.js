@@ -1,15 +1,15 @@
 'use strict';
 
-var GitLabHandler = require('./lib/GitLabHandler');
+const GitLabHandler = require('./lib/GitLabHandler');
 
-var exports = () => {
+let exports = () => {
   this.configure = this.configure.bind(this);
   this.options = this.options.bind(this);
   this.run = this.run.bind(this);
   this.yargs = null;
 };
 
-var server = {};
+let server = {};
 
 exports.shortDescription = 'Runs a webhook handler and sends updates to gitlab status API.';
 
