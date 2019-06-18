@@ -2,7 +2,7 @@
 
 const GitLabHandler = require('./lib/GitLabHandler');
 
-let exports = () => {
+var exports = () => {
   this.configure = this.configure.bind(this);
   this.options = this.options.bind(this);
   this.run = this.run.bind(this);
