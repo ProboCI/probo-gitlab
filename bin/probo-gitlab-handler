@@ -17,7 +17,8 @@ loader.on('error', error => {
   }
 });
 
-let argv = yargs
+// Sets the command options.
+var argv = yargs
   .describe('config', 'A YAML config file or directory of yaml files to load, can be invoked multiple times and later files will override earlier.')
   .alias('config', 'c');
 
@@ -26,9 +27,9 @@ let executor = handler;
 if (executor.options) {
   argv = executor.options(yargs);
 }
-else {
-  argv = argv.argv;
-}
+
+// Gets the arguments.
+argv = argv.argv;
 
 loader.add(path.resolve(path.join(__dirname, '..', 'defaults.yaml')));
 loader.addAndNormalizeObject(process.env);
