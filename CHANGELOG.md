@@ -1,5 +1,9 @@
 # Probo GitLab Changelog
 
+## 2.1.1
+  - June 18 2019
+  - Fix for integrating with reaper.
+
 ## 2.1.0
   - May 20 2019
   - Integrate with the reaper.
