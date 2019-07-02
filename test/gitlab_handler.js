@@ -15,10 +15,12 @@ const nockout = require('./__nockout');
 const GitLabHandler = require('../lib/GitLabHandler');
 const GitLab = require('../lib/GitLab');
 
-const testLogs = {
+const testLogger = {
   info: () => {},
   debug: () => {},
-  error: () => {}
+  error: () => {},
+  child: () => testLogger,
+  trace: () => {},
 }
 
 let config = {
@@ -34,10 +36,7 @@ let config = {
 
 let gitlab = new GitLab(config);
 
-let glhServer = new GitLabHandler(config);
-
-// Silence logs.
-glhServer.log = testLogs;
+let glhServer = new GitLabHandler(config, testLogger);
 
 function http(path, glh) {
   glh = glh || glhServer;
@@ -101,8 +100,8 @@ describe('GitLabHandler', () => {
         http(config.webhookPath)
           .post({body: payload, headers: headers}, (err, res, body) => {
             // handles push by returning OK and doing nothing else
-            body.should.eql({ok: true});
             should.not.exist(err);
+            body.should.eql({ok: true});
 
             // TODO: WAT? why isn't this a set of async callbacks so we actually know when it's done?!
             // pause for a little before finishing to allow push processing to run
@@ -218,19 +217,16 @@ describe('GitLabHandler', () => {
     };
 
     before('start another glh', done => {
-      glh = new GitLabHandler(config);
+      glh = new GitLabHandler(config, testLogger);
       glh.start(() => {
         nock.enableNetConnect(glh.server.url.replace('http://', ''));
         done();
       });
-
-      // Silence logs.
-      glh.log = testLogs;
     });
 
     before('set up mocks', () => {
       // Mocks the request to post a status.
-      gitlabMocked = sinon.stub(gitlab, 'postStatusToGitLab')
+      gitlabMocked = sinon.stub(gitlab, 'postStatus')
         .callsFake((project, sha, statusInfo, done) => {
           project.should.eql(build.project);
           sha.should.equal(build.commit.ref);
@@ -309,10 +305,7 @@ describe('GitLabHandler', () => {
         ^`;
 
     before('init mocks', () => {
-      glh = new GitLabHandler(config);
-
-      // Silence logs.
-      glh.log = testLogs;
+      glh = new GitLabHandler(config, testLogger);
 
       let gitLabApi = sinon.stub(gitlab, 'getApi').returns({
         RepositoryFiles: {
@@ -401,13 +394,13 @@ function initNock() {
 
   let buildId = 'build1';
 
-  // nock out glh server - pass these requests through
+  // Enables requests to GitLab Handler through.
   nock.enableNetConnect(glhServer.server.url.replace('http://', ''));
 
   // Nocks out URLs used by/related to GitLab Handler.
   return nockout({
     not_required: ['status_update'],
-    processor: (nocks) => {
+    processor: nocks => {
       // nock out API URLs
       nocks.push(nock(config.api.url)
                  .get('/projects?service=gitlab&slug=proboci%2Ftestrepo&single=true')
