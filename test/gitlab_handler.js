@@ -15,14 +15,6 @@ const nockout = require('./__nockout');
 const GitLabHandler = require('../lib/GitLabHandler');
 const GitLab = require('../lib/GitLab');
 
-const testLogger = {
-  info: () => {},
-  debug: () => {},
-  error: () => {},
-  child: () => testLogger,
-  trace: () => {},
-}
-
 let config = {
   webhookPath: '/glh',
   webhookSecret: 'secret',
@@ -31,12 +23,13 @@ let config = {
     url: 'http://localhost:3000',
     token: 'token',
   },
-  gitLabToken: '1234'
+  gitLabToken: '1234',
+  logLevel: Number.POSITIVE_INFINITY,
 };
 
 let gitlab = new GitLab(config);
 
-let glhServer = new GitLabHandler(config, testLogger);
+let glhServer = new GitLabHandler(config);
 
 function http(path, glh) {
   glh = glh || glhServer;
@@ -217,7 +210,7 @@ describe('GitLabHandler', () => {
     };
 
     before('start another glh', done => {
-      glh = new GitLabHandler(config, testLogger);
+      glh = new GitLabHandler(config);
       glh.start(() => {
         nock.enableNetConnect(glh.server.url.replace('http://', ''));
         done();
@@ -305,7 +298,7 @@ describe('GitLabHandler', () => {
         ^`;
 
     before('init mocks', () => {
-      glh = new GitLabHandler(config, testLogger);
+      glh = new GitLabHandler(config);
 
       let gitLabApi = sinon.stub(gitlab, 'getApi').returns({
         RepositoryFiles: {

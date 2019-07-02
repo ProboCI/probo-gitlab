@@ -6,7 +6,7 @@
   "scripts": {
     "start": "./bin/probo-gtilab-handler -c dev.yaml | bunyan",
     "startdev": "nodemon ./bin/probo-gtilab-handler -c dev.yaml | bunyan",
-    "test": "mocha",
+    "test": "mocha --timeout 5000",
     "watch": "mocha -w"
   },
   "author": "",
