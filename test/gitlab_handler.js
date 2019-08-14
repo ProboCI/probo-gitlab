@@ -153,29 +153,6 @@ describe('GitLabHandler', () => {
             slug: 'proboci/testrepo',
           });
 
-          build.request.should.eql({
-            branch: {
-              html_url: "https://gitlab.com/proboci/testrepo/tree/master",
-              name: 'master',
-            },
-            commit_url: 'https://gitlab.com/proboci/testrepo/commit/07fca8f08ae1ad8a77c50beab4bf6302c705e21e',
-            name: "WIP: Master",
-            pull_request: {
-              id: 123456,
-              description: '',
-              html_url: 'https://gitlab.com/proboci/testrepo/merge_requests/1',
-              name: 'WIP: Master',
-              number: 1,
-            },
-            owner: 'proboci',
-            repo: 'testrepo',
-            repo_id: 1234,
-            service: 'gitlab',
-            sha: '07fca8f08ae1ad8a77c50beab4bf6302c705e21e',
-            slug: 'proboci/testrepo',
-            type: 'pull_request',
-          });
-
           done();
         });
       });
