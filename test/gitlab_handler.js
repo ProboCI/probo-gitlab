@@ -153,25 +153,6 @@ describe('GitLabHandler', () => {
             slug: 'proboci/testrepo',
           });
 
-          build.request.should.eql({
-            branch: 'master',
-            branch_html_url: 'https://gitlab.com/proboci/testrepo/tree/master',
-            commit_url: 'https://gitlab.com/proboci/testrepo/commit/07fca8f08ae1ad8a77c50beab4bf6302c705e21e',
-            pull_request_id: 123456,
-            pull_request_description: '',
-            pull_request_html_url: 'https://gitlab.com/proboci/testrepo/merge_requests/1',
-            pull_request_name: 'WIP: Master',
-            owner: 'proboci',
-            pull_request: 1,
-            repo: 'testrepo',
-            repo_id: 1234,
-            service: 'gitlab',
-            sha: '07fca8f08ae1ad8a77c50beab4bf6302c705e21e',
-            slug: 'proboci/testrepo',
-            type: 'pull_request',
-            payload: payload,
-          });
-
           done();
         });
       });
@@ -365,7 +346,7 @@ describe('GitLabHandler', () => {
     });
 
     it('sends status update for bad yaml', done => {
-      glh.processMergeRequest({sha: 'sha1', type: 'gitlab', id: 'bad'}, () => {
+      glh.processWebhookEvent({sha: 'sha1', type: 'gitlab', id: 'bad'}, () => {
         let param1 = {
           state: 'error',
           description: errorMessageBad,
