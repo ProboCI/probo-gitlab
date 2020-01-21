@@ -1,15 +1,15 @@
 'use strict';
 
-var GitLabHandler = require('./lib/GitLabHandler');
+const GitLabHandler = require('./lib/GitLabHandler');
 
-var exports = function() {
+var exports = () => {
   this.configure = this.configure.bind(this);
   this.options = this.options.bind(this);
   this.run = this.run.bind(this);
   this.yargs = null;
 };
 
-var server = {};
+let server = {};
 
 exports.shortDescription = 'Runs a webhook handler and sends updates to gitlab status API.';
 
@@ -17,7 +17,7 @@ exports.help = 'Usage: npm start [args]';
 exports.help += '\n';
 exports.help += 'Provides a gitlab webhook endpoint.';
 
-exports.options = function(yargs) {
+exports.options = yargs => {
   this.yargs = yargs;
   return yargs
     .describe('help', 'Displays this message.')
@@ -33,11 +33,11 @@ exports.options = function(yargs) {
   ;
 };
 
-exports.configure = function(config) {
+exports.configure = config => {
   server = new GitLabHandler(config);
 };
 
-exports.run = function(cb) {
+exports.run = () => {
   server.start();
 };
 

@@ -1,18 +1,19 @@
 'use strict';
 
-/* eslint no-unused-expressions: 0 */
-var util = require('util');
-var request = require('request');
-var should = require('should');
+const fs = require('fs');
+const nock = require('nock');
+const Promise = require('bluebird');
+const request = require('request');
+const should = require('should');
+const sinon = require('sinon');
+const util = require('util');
+const yaml = require('js-yaml');
 
-var sinon = require('sinon');
-var nock = require('nock');
-var nockout = require('./__nockout');
-var Promise = require('bluebird');
+const nockout = require('./__nockout');
 
-var GitLabHandler = require('../lib/GitLabHandler');
+const GitLabHandler = require('../lib/GitLabHandler');
 
-var config = {
+let config = {
   webhookPath: '/glh',
   webhookSecret: 'secret',
   port: 0,
@@ -20,9 +21,11 @@ var config = {
     url: 'http://localhost:3000',
     token: 'token',
   },
-  gitLabToken: '1234'
+  gitLabToken: '1234',
+  logLevel: Number.POSITIVE_INFINITY,
 };
-var glhServer = new GitLabHandler(config);
+
+let glhServer = new GitLabHandler(config);
 
 function http(path, glh) {
   glh = glh || glhServer;
@@ -34,47 +37,65 @@ function http(path, glh) {
   return request.defaults(options);
 }
 
-describe('GitLabHandler', function() {
-  describe('webhooks', function() {
-    before('start GitLabHandler server', function(done) {
-      glhServer.start(done);
+describe('GitLabHandler', () => {
+  describe('webhooks', () => {
+    before('start GitLabHandler server', () => {
+      glhServer.start();
     });
 
-    after('stop GitLabHandler server', function(done) {
-      glhServer.stop(done);
+    after('stop GitLabHandler server', () => {
+      glhServer.close();
     });
 
-    describe('pull', function() {
+    describe('pull', () => {
       let nocker;
-      beforeEach('nock out network calls', function() {
+      let handlerMocked;
+
+      before(() => {
+        // Mocks the download of the probo.yaml config file.
+        handlerMocked = sinon.stub(glhServer.gitlab, 'fetchProboYamlConfig')
+          .callsFake((project, sha, cb) => {
+            let settings = yaml.safeLoad(fs.readFileSync('test/files/probo.yaml', 'utf8'));
+
+            cb(null, settings);
+          });
+      });
+
+      beforeEach('nock out network calls', () => {
         nocker = initNock();
       });
 
-      afterEach('reset network mocks', function() {
+      after(() => {
+        handlerMocked.restore();
+      });
+
+      afterEach('reset network mocks', () => {
         nocker.cleanup();
       });
 
-      it('is routed', function(done) {
+      it('is routed', done => {
+
         let payload = require('./fixtures/pull_payload');
         let headers = {
           'X-GitLab-Token': 'secret',
           'X-GitLab-Event': 'Merge Request Hook',
         };
-        http(config.webhookPath)
-        .post({body: payload, headers: headers}, function(err, res, body) {
-          // handles push by returning OK and doing nothing else
-          body.should.eql({ok: true});
-          should.not.exist(err);
 
-          // TODO: WAT? why isn't this a set of async callbacks so we actually know when it's done?!
-          // pause for a little before finishing to allow push processing to run
-          // and hit all the GL nocked endpoints
-          setTimeout(done, 200);
-        });
+        http(config.webhookPath)
+          .post({body: payload, headers: headers}, (err, res, body) => {
+            // handles push by returning OK and doing nothing else
+            should.not.exist(err);
+            body.should.eql({ok: true});
+
+            // TODO: WAT? why isn't this a set of async callbacks so we actually know when it's done?!
+            // pause for a little before finishing to allow push processing to run
+            // and hit all the GL nocked endpoints
+            setTimeout(done, 200);
+          });
       });
 
 
-      it('is handled', function(done) {
+      it('is handled', done => {
         let payload = require('./fixtures/pull_payload');
 
         // fire off handler event
@@ -84,7 +105,7 @@ describe('GitLabHandler', function() {
           url: '/glh',
           payload: payload,
         };
-        glhServer.mergeRequestHandler(event, function(err, build) {
+        glhServer.mergeRequestHandler(event, (err, build) => {
           should.not.exist(err);
           build.should.be.a.object;
           build.id.should.eql('build1');
@@ -139,8 +160,8 @@ describe('GitLabHandler', function() {
       });
     });
 
-    describe('push', function() {
-      it('is handled', function(done) {
+    describe('push', () => {
+      it('is handled', done => {
         let payload = require('./fixtures/push_payload');
 
         let headers = {
@@ -148,7 +169,7 @@ describe('GitLabHandler', function() {
           'X-GitLab-Delivery': '8ec7bd00-df2b-11e4-9807-657b8ba6b6bd',
         };
 
-        http(config.webhookPath).post({body: payload, headers: headers}, function(err, res, body) {
+        http(config.webhookPath).post({body: payload, headers: headers}, (err, res, body) => {
           // push events should return OK and do nothing else.
           body.should.eql({ok: true});
           done();
@@ -157,28 +178,53 @@ describe('GitLabHandler', function() {
     });
   });
 
-  describe('status update endpoint', function() {
-    let glh;
+  describe('status update endpoint', () => {
 
-    before('start another glh', function(done) {
+    let glh;
+    let gitlabMocked;
+    let handlerMocked;
+
+    let build = {
+      projectId: '123',
+
+      status: 'success',
+      commit: {
+        ref: 'd0fdf6c2d2b5e7402985f1e720aa27e40d018194',
+      },
+      project: {
+        provider_id: '1234',
+        service: 'githlab',
+        owner: 'proboci',
+        repo: 'testrepo',
+        slug: 'proboci/testrepo',
+      },
+    };
+
+    before('start another glh', done => {
       glh = new GitLabHandler(config);
-      glh.start(function() {
+      glh.start(() => {
         nock.enableNetConnect(glh.server.url.replace('http://', ''));
         done();
       });
     });
 
-    let mocked;
-    before('set up mocks', function() {
-      // call the first cb arg w/ no arguments
-      mocked = sinon.stub(glh, 'postStatusToGitLab').yields();
+    before('set up mocks', () => {
+      // Mocks the request to post a status.
+      handlerMocked = sinon.stub(glh.gitlab, 'postStatus')
+        .callsFake((project, sha, statusInfo, done) => {
+          project.should.eql(build.project);
+          sha.should.equal(build.commit.ref);
+
+          done(null, statusInfo);
+        });
     });
 
-    after('clear mocks', function() {
-      mocked.reset();
+    after('clear mocks', () => {
+      handlerMocked.restore();
+      glh.close();
     });
 
-    it('accepts /update', function(done) {
+    it('accepts /update', done => {
 
       let update = {
         state: 'pending',
@@ -187,34 +233,20 @@ describe('GitLabHandler', function() {
         target_url: 'http://my_url.com',
       };
 
-      let build = {
-        projectId: '123',
-
-        status: 'success',
-        commit: {
-          ref: 'd0fdf6c2d2b5e7402985f1e720aa27e40d018194',
-        },
-        project: {
-          id: '1234',
-          service: 'githlab',
-          owner: 'proboci',
-          repo: 'testrepo',
-          slug: 'proboci/testrepo',
-        },
-      };
-
       http('/update', glh).post({body: {
         update: update,
         build: build,
-      }}, function _(err, res, body) {
+      }}, (err, res, body) => {
+        if (err) return done(err);
+
         should.not.exist(err);
         body.should.eql(update);
 
-        done(err);
+        done();
       });
     });
 
-    it('accepts /builds/:bid/status/:context', function(done) {
+    it('accepts /builds/:bid/status/:context', done => {
       let update = {
         state: 'pending',
         description: 'Environment built!',
@@ -222,62 +254,46 @@ describe('GitLabHandler', function() {
         target_url: 'http://my_url.com',
       };
 
-      let build = {
-        projectId: '123',
+      http(`/builds/${build.id}/status/ci-env`, glh)
+        .post({body: {
+          update: update,
+          build: build,
+        }}, (err, res, body) => {
+          should.not.exist(err);
+          body.should.eql({
+            state: 'pending',
+            description: 'Environment built!',
+            // NOTE context gets inserted from URL
+            context: 'ci-env',
+            target_url: 'http://my_url.com',
+          });
 
-        status: 'success',
-        commit: {
-          ref: 'd0fdf6c2d2b5e7402985f1e720aa27e40d018194',
-        },
-        project: {
-          id: '1234',
-          service: 'gitlab',
-          owner: 'proboci',
-          repo: 'testrepo',
-          slug: 'proboci/testrepo',
-        },
-      };
-
-      http('/builds/' + build.id + '/status/' + 'ci-env', glh).post({body: {
-        update: update,
-        build: build,
-      }}, function _(err, res, body) {
-        should.not.exist(err);
-        body.should.eql({
-          state: 'pending',
-          description: 'Environment built!',
-          // NOTE context gets inserted from URL
-          context: 'ci-env',
-          target_url: 'http://my_url.com',
+          done(err);
         });
-
-        done(err);
-      });
     });
   });
 
 
-  describe('probo.yaml file parsing', function() {
+  describe('probo.yaml file parsing', () => {
     let mocks = [];
     let updateSpy;
     let glh;
 
-    var errorMessageEmpty = `Failed to parse .probo.yml:First argument must be a string, Buffer, ArrayBuffer, Array, or array-like object.`;
-    var errorMessageBad = `Failed to parse .probo.yml:bad indentation of a mapping entry at line 3, column 5:
+    let errorMessageEmpty = 'Failed to parse .probo.yml: The first argument must be one of type string, Buffer, ArrayBuffer, Array, or Array-like Object. Received type undefined';
+    let errorMessageBad = `Failed to parse .probo.yml: bad indentation of a mapping entry at line 3, column 5:
         command: 'bad command'
         ^`;
 
-    before('init mocks', function() {
+    before('init mocks', () => {
       glh = new GitLabHandler(config);
 
-      let gitLabApi = sinon.stub(glh, 'getGitLabApi');
-      gitLabApi.returns({
+      let gitLabApi = sinon.stub(glh.gitlab, 'getApi').returns({
         RepositoryFiles: {
-          show: function(projectId, filePath, ref) {
+          show: (projectId, filePath, ref) => {
             if (ref == 'sha1') {
               return Promise.resolve({
                     file_path: '.probo.yml',
-                    content: new Buffer(`steps:
+                    content: new Buffer.from(`steps:
     - name: task
     command: 'bad command'`).toString('base64')
               });
@@ -290,24 +306,26 @@ describe('GitLabHandler', function() {
       });
       mocks.push(gitLabApi);
 
-      // mock out internal API calls
+      // Mocks out internal API calls
       mocks.push(
         sinon.stub(glh.api, 'findProjectByRepo').yields(null, {})
       );
 
-      // ensure that buildStatusUpdateHandler is called
+      // Mocks buildStatusUpdateHandler.
       updateSpy = sinon.stub(glh, 'buildStatusUpdateHandler').yields();
       mocks.push(updateSpy);
     });
 
-    after('restore mocks', function() {
-      mocks.forEach(function(mock) {
-        mock.reset();
+    after('restore mocks', () => {
+      mocks.forEach(mock => {
+        mock.restore();
       });
+
+      glh.close();
     });
 
-    it('throws an error for a bad yaml', function(done) {
-      glh.fetchProboYamlConfigFromGitLab({service_auth: {token: 'testing'}}, null, function(err, config) {
+    it('throws an error for a bad yaml', done => {
+      glh.gitlab.fetchProboYamlConfig({service_auth: {token: 'testing'}}, null, (err, config) => {
         try {
           err.message.should.eql(errorMessageEmpty);
           done();
@@ -317,8 +335,8 @@ describe('GitLabHandler', function() {
       });
     });
 
-    it('sends status update for bad yaml', function(done) {
-      glh.processRequest({sha: 'sha1', type: 'gitlab', id: 'bad'}, function() {
+    it('sends status update for bad yaml', done => {
+      glh.processMergeRequest({sha: 'sha1', type: 'gitlab', id: 'bad'}, () => {
         let param1 = {
           state: 'error',
           description: errorMessageBad,
@@ -352,15 +370,15 @@ function initNock() {
     }
   };
 
-  var buildId = 'build1';
+  let buildId = 'build1';
 
-  // nock out glh server - pass these requests through
+  // Enables requests to GitLab Handler through.
   nock.enableNetConnect(glhServer.server.url.replace('http://', ''));
 
-  // Nock out gitlab URLs.
-  return nockout('requests.json', {
+  // Nocks out URLs related to the container API.
+  return nockout({
     not_required: ['status_update'],
-    processor: function(nocks) {
+    processor: nocks => {
       // nock out API URLs
       nocks.push(nock(config.api.url)
                  .get('/projects?service=gitlab&slug=proboci%2Ftestrepo&single=true')
@@ -368,18 +386,20 @@ function initNock() {
       nocks[nocks.length - 1].name = 'project_search';
 
       nocks.push(nock(config.api.url)
+        .defaultReplyHeaders({
+          'Content-Type': 'application/json',
+        })
         .post('/startbuild')
-        .reply(200, function(uri, requestBody) {
+        .reply(200, (uri, requestBody) => {
           // start build sets id and project id on build
           // and puts project inside build, returning build
-          let body = JSON.parse(requestBody);
+          let body = requestBody;
           body.build.id = buildId;
           body.build.projectId = body.project.id;
           body.build.project = body.project;
           delete body.project;
+
           return body.build;
-        }, {
-          'content-type': 'application/json',
         }));
       nocks[nocks.length - 1].name = 'startbuild';
 
@@ -393,6 +413,7 @@ function initNock() {
           context: 'ci/tests',
         }));
       nocks[nocks.length - 1].name = 'status_update';
+
     },
   });
 }

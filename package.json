@@ -6,34 +6,32 @@
   "scripts": {
     "start": "./bin/probo-gtilab-handler -c dev.yaml | bunyan",
     "startdev": "nodemon ./bin/probo-gtilab-handler -c dev.yaml | bunyan",
-    "test": "mocha --require should",
-    "watch": "mocha -w --require should | bunyan"
+    "test": "mocha --timeout 5000",
+    "watch": "mocha -w"
   },
   "author": "",
   "license": "Apache-2.0",
   "dependencies": {
-    "async": "^1.5.0",
-    "babel-runtime": "^6.26.0",
-    "bluebird": "^2.10.0",
-    "bunyan": "^1.4.0",
-    "gitlab": "^3.5.1",
+    "async": "^3.0.1",
+    "bluebird": "^3.5.5",
+    "bunyan": "^1.8.12",
+    "gitlab": "^6.3.7",
     "gitlab-webhook-handler": "^1.0.1",
-    "js-yaml": "^3.3.1",
-    "oauth": "^0.9.14",
+    "js-yaml": "^3.13.1",
     "probo-request-logger": "^1.1.2",
     "querystring": "^0.2.0",
-    "request": "^2.57.0",
-    "restify": "^4.1",
-    "superagent": "^1.2.0",
-    "yaml-config-loader": "1.1.1",
-    "yargs": "^3.4.5"
+    "request": "^2.88.0",
+    "restify": "^8.3.3",
+    "superagent": "^5.0.8",
+    "yaml-config-loader": "2.1.0",
+    "yargs": "^13.2.4"
   },
   "devDependencies": {
-    "eslint": "^1.10.3",
-    "eslint-config-probo": "^1.0.2",
-    "mocha": "^2.2.4",
-    "nock": "^1.6.0",
-    "should": "^5.2.0",
-    "sinon": "^6.1.4"
+    "eslint": "^5.16.0",
+    "eslint-config-probo": "^2.0.0",
+    "mocha": "^6.1.4",
+    "nock": "^10.0.6",
+    "should": "^13.2.3",
+    "sinon": "^7.3.2"
   }
 }
