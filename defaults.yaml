@@ -5,7 +5,7 @@ webhookPath: '/gitlab-webhook'
 webhookSecret: ''
 
 # GitLab client key and client secret. These are generated for you
-# when you create a new OAuth client in Bitbucket
+# when you create a new OAuth client in GitLab
 # clientKey: null
 # clientSecret: null
 
