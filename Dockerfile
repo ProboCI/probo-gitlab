@@ -15,4 +15,4 @@ WORKDIR /home/probo/app
 
 EXPOSE 3013
 
-CMD ["bin/probo-gitlab-handler"]
+CMD ["sh", "/home/probo/app/bin/startup.sh"]
