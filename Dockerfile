@@ -1,7 +1,7 @@
 # ProboCI
 # https://www.probo.ci
 
-FROM node:12.20.2
+FROM node:16
 
 RUN useradd --user-group --create-home --shell /bin/false probo
 RUN mkdir -p /home/probo/app
@@ -15,4 +15,4 @@ WORKDIR /home/probo/app
 
 EXPOSE 3013
 
-CMD ["bin/probo-gitlab-handler"]
+CMD ["sh", "/home/probo/app/bin/startup.sh"]

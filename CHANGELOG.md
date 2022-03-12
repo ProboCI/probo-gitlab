@@ -1,5 +1,9 @@
 # Probo GitLab Changelog
 
+## 3.0.0
+  - Jan 21 2020
+  - Allowing gitlab server integration.
+
 ## 2.1.1
   - June 18 2019
   - Fix for integrating with reaper.

@@ -1,6 +1,5 @@
 'use strict';
 
-/* eslint no-unused-expressions: 0 */
 const fs = require('fs');
 const nock = require('nock');
 const Promise = require('bluebird');
@@ -13,13 +12,6 @@ const yaml = require('js-yaml');
 const nockout = require('./__nockout');
 
 const GitLabHandler = require('../lib/GitLabHandler');
-const GitLab = require('../lib/GitLab');
-
-const testLogs = {
-  info: () => {},
-  debug: () => {},
-  error: () => {}
-}
 
 let config = {
   webhookPath: '/glh',
@@ -29,15 +21,11 @@ let config = {
     url: 'http://localhost:3000',
     token: 'token',
   },
-  gitLabToken: '1234'
+  gitLabToken: '1234',
+  logLevel: Number.POSITIVE_INFINITY,
 };
 
-let gitlab = new GitLab(config);
-
 let glhServer = new GitLabHandler(config);
-
-// Silence logs.
-glhServer.log = testLogs;
 
 function http(path, glh) {
   glh = glh || glhServer;
@@ -61,20 +49,16 @@ describe('GitLabHandler', () => {
 
     describe('pull', () => {
       let nocker;
-      let gitlabMocked;
       let handlerMocked;
 
       before(() => {
         // Mocks the download of the probo.yaml config file.
-        gitlabMocked = sinon.stub(gitlab, 'fetchProboYamlConfig')
+        handlerMocked = sinon.stub(glhServer.gitlab, 'fetchProboYamlConfig')
           .callsFake((project, sha, cb) => {
             let settings = yaml.safeLoad(fs.readFileSync('test/files/probo.yaml', 'utf8'));
 
             cb(null, settings);
           });
-
-        // Injects the above mocked GitLab object.
-        handlerMocked = sinon.stub(glhServer, 'gitlab').value(gitlab);
       });
 
       beforeEach('nock out network calls', () => {
@@ -82,7 +66,6 @@ describe('GitLabHandler', () => {
       });
 
       after(() => {
-        gitlabMocked.restore();
         handlerMocked.restore();
       });
 
@@ -101,8 +84,8 @@ describe('GitLabHandler', () => {
         http(config.webhookPath)
           .post({body: payload, headers: headers}, (err, res, body) => {
             // handles push by returning OK and doing nothing else
-            body.should.eql({ok: true});
             should.not.exist(err);
+            body.should.eql({ok: true});
 
             // TODO: WAT? why isn't this a set of async callbacks so we actually know when it's done?!
             // pause for a little before finishing to allow push processing to run
@@ -151,25 +134,6 @@ describe('GitLabHandler', () => {
               token: "testing"
             },
             slug: 'proboci/testrepo',
-          });
-
-          build.request.should.eql({
-            branch: 'master',
-            branch_html_url: 'https://gitlab.com/proboci/testrepo/tree/master',
-            commit_url: 'https://gitlab.com/proboci/testrepo/commit/07fca8f08ae1ad8a77c50beab4bf6302c705e21e',
-            pull_request_id: 123456,
-            pull_request_description: '',
-            pull_request_html_url: 'https://gitlab.com/proboci/testrepo/merge_requests/1',
-            pull_request_name: 'WIP: Master',
-            owner: 'proboci',
-            pull_request: 1,
-            repo: 'testrepo',
-            repo_id: 1234,
-            service: 'gitlab',
-            sha: '07fca8f08ae1ad8a77c50beab4bf6302c705e21e',
-            slug: 'proboci/testrepo',
-            type: 'pull_request',
-            payload: payload,
           });
 
           done();
@@ -223,27 +187,20 @@ describe('GitLabHandler', () => {
         nock.enableNetConnect(glh.server.url.replace('http://', ''));
         done();
       });
-
-      // Silence logs.
-      glh.log = testLogs;
     });
 
     before('set up mocks', () => {
       // Mocks the request to post a status.
-      gitlabMocked = sinon.stub(gitlab, 'postStatusToGitLab')
+      handlerMocked = sinon.stub(glh.gitlab, 'postStatus')
         .callsFake((project, sha, statusInfo, done) => {
           project.should.eql(build.project);
           sha.should.equal(build.commit.ref);
 
           done(null, statusInfo);
         });
-
-      // Injects the above mocked GitLab object.
-      handlerMocked = sinon.stub(glh, 'gitlab').value(gitlab);
     });
 
     after('clear mocks', () => {
-      gitlabMocked.restore();
       handlerMocked.restore();
       glh.close();
     });
@@ -311,10 +268,7 @@ describe('GitLabHandler', () => {
     before('init mocks', () => {
       glh = new GitLabHandler(config);
 
-      // Silence logs.
-      glh.log = testLogs;
-
-      let gitLabApi = sinon.stub(gitlab, 'getApi').returns({
+      let gitLabApi = sinon.stub(glh.gitlab, 'getApi').returns({
         RepositoryFiles: {
           show: (projectId, filePath, ref) => {
             if (ref == 'sha1') {
@@ -332,8 +286,6 @@ describe('GitLabHandler', () => {
         }
       });
       mocks.push(gitLabApi);
-
-      mocks.push(sinon.stub(glh, 'gitlab').value(gitlab));
 
       // Mocks out internal API calls
       mocks.push(
@@ -365,7 +317,7 @@ describe('GitLabHandler', () => {
     });
 
     it('sends status update for bad yaml', done => {
-      glh.processMergeRequest({sha: 'sha1', type: 'gitlab', id: 'bad'}, () => {
+      glh.processWebhookEvent({sha: 'sha1', type: 'gitlab', id: 'bad'}, () => {
         let param1 = {
           state: 'error',
           description: errorMessageBad,
@@ -401,13 +353,13 @@ function initNock() {
 
   let buildId = 'build1';
 
-  // nock out glh server - pass these requests through
+  // Enables requests to GitLab Handler through.
   nock.enableNetConnect(glhServer.server.url.replace('http://', ''));
 
-  // Nocks out URLs used by/related to GitLab Handler.
+  // Nocks out URLs related to the container API.
   return nockout({
     not_required: ['status_update'],
-    processor: (nocks) => {
+    processor: nocks => {
       // nock out API URLs
       nocks.push(nock(config.api.url)
                  .get('/projects?service=gitlab&slug=proboci%2Ftestrepo&single=true')
