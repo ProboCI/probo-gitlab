@@ -8,6 +8,21 @@ webhookSecret: ''
 # when you create a new OAuth client in GitLab
 # clientKey: null
 # clientSecret: null
+# callbackURL: null
+
+# logLevel needs to match with Bunyan's log levels, or:
+# trace, debug, info, warn, error, and fatal
+logLevel: debug
+
+# Mail configurations for SMTP server and sending error mails
+mail:
+  smtpServer: null
+  smtpPort: null
+  smtpSecure: false
+  smtpUser: null
+  smtpPass: null
+  from: null
+  to: null
 
 # Settings for the API or Container Manager server
 # port
