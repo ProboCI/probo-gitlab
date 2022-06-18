@@ -20,6 +20,7 @@
     "gitlab": "^14.2.2",
     "gitlab-webhook-handler": "^1.0.1",
     "js-yaml": "^3.13.1",
+    "kafkajs": "^2.0.2",
     "mjml": "^4.12.0",
     "nodemailer": "^6.7.5",
     "probo-request-logger": "^1.1.2",

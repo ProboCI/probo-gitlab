@@ -1630,6 +1630,11 @@
   "resolved" "https://registry.npmjs.org/just-extend/-/just-extend-4.0.2.tgz"
   "version" "4.0.2"
 
+"kafkajs@^2.0.2":
+  "integrity" "sha512-g6CM3fAenofOjR1bfOAqeZUEaSGhNtBscNokybSdW1rmIKYNwBPC9xQzwulFJm36u/xcxXUiCl/L/qfslapihA=="
+  "resolved" "https://registry.npmjs.org/kafkajs/-/kafkajs-2.0.2.tgz"
+  "version" "2.0.2"
+
 "ky-universal@^0.3.0":
   "integrity" "sha512-CM4Bgb2zZZpsprcjI6DNYTaH3oGHXL2u7BU4DK+lfCuC4snkt9/WRpMYeKbBbXscvKkeqBwzzjFX2WwmKY5K/A=="
   "resolved" "https://registry.npmjs.org/ky-universal/-/ky-universal-0.3.0.tgz"
