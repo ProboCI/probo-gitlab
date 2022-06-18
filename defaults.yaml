@@ -1,6 +1,7 @@
 # Port for the server to listen on
 port: 3013
 hostname: localhost
+
 webhookPath: '/gitlab-webhook'
 webhookSecret: ''
 
@@ -14,18 +15,7 @@ webhookSecret: ''
 # trace, debug, info, warn, error, and fatal
 logLevel: debug
 
-# Mail configurations for SMTP server and sending error mails
-mail:
-  smtpServer: null
-  smtpPort: null
-  smtpSecure: false
-  smtpUser: null
-  smtpPass: null
-  from: null
-  to: null
-
-# Settings for the API or Container Manager server
-# port
+# Settings for the API or Container Manager server port.
 api:
   url: "http://localhost:3000"
-  token: "token2"
+  token: "token"
