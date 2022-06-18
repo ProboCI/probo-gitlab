@@ -27,7 +27,7 @@
     "request": "^2.88.0",
     "request-promise": "^4.2.6",
     "restify": "^8.3.3",
-    "superagent": "^5.0.8",
+    "superagent": "^7.1.6",
     "sync-request": "^6.1.0",
     "yaml-config-loader": "2.1.0",
     "yargs": "^16.2.0"
